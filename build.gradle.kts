@@ -42,22 +42,22 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-tasks.register("createNatsNetwork"){
+tasks.register("createDockerNetwork"){
     doLast{
         exec{
             executable("sh")
-            args("-c", "if ! docker network ls --quiet --filter \"name=nats\"; then docker network create nats; fi")
+            args("-c", " docker network inspect nats >> /dev/null 2>&1 || docker network create nats")
         }
     }
 }
 
 tasks.register("runNatsServer"){
-    dependsOn("createNatsNetwork")
+    dependsOn("createDockerNetwork")
     doLast{
         exec{
             executable("sh")
-            args("-c", "if ! docker container ls --quiet --filter \"name=nats\"; then docker run --name nats " +
-                    "-d --network nats --rm -p 4222:4222 -p 8222:8222 nats --http_port 8222; fi")
+            args("-c", "docker container inspect nats || docker run --name nats " +
+                    "-d --network nats --rm -p 4222:4222 -p 8222:8222 nats --http_port 8222")
         }
     }
 }
